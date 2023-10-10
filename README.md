@@ -1,1 +1,1 @@
-# ja_lab
+# ja_proj

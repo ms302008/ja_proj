@@ -189,7 +189,8 @@ namespace CppCLRWinFormsProject {
 		OpenFileDialog^ openFileDialog1 = gcnew OpenFileDialog;
 
 		openFileDialog1->InitialDirectory = "";
-		openFileDialog1->Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
+		//openFileDialog1->Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
+		openFileDialog1->Filter = "Image Files (*.bmp;*.jpg;*.jpeg,*.png)|*.BMP;*.JPG;*.JPEG;*.PNG";
 		openFileDialog1->FilterIndex = 1;
 		openFileDialog1->RestoreDirectory = true;
 
@@ -198,7 +199,8 @@ namespace CppCLRWinFormsProject {
 			if ((myStream = openFileDialog1->OpenFile()) != nullptr)
 			{
 				// Insert code to read the stream here.
-
+				pb_orgObr->ImageLocation = openFileDialog1->FileName;
+				pb_orgObr->SizeMode = PictureBoxSizeMode::StretchImage;
 				myStream->Close();
 			}
 		}

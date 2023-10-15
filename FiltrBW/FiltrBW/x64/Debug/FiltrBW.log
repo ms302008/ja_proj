@@ -1,7 +1,3 @@
-﻿  pch.cpp
-  AssemblyInfo.cpp
-  Form1.cpp
-  main.cpp
-  Generating Code...
+﻿  main.cpp
   AssemblyInfo.obj : MSIL module encountered; incremental linking is disabled for MSIL; performing full link
   FiltrBW.vcxproj -> D:\git\ja_proj\FiltrBW\x64\Debug\FiltrBW.exe

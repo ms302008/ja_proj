@@ -1,5 +1,0 @@
-﻿  Assembling BWAsm.asm...
-     Creating library D:\git\ja_proj\FiltrBW\x64\Debug\JAsm.lib and object D:\git\ja_proj\FiltrBW\x64\Debug\JAsm.exp
-JAsm.exp : warning LNK4070: /OUT:BWAsm.dll directive in .EXP differs from output filename 'D:\git\ja_proj\FiltrBW\x64\Debug\JAsm.dll'; ignoring directive
-LINK : error LNK2001: unresolved external symbol _DllMainCRTStartup
-D:\git\ja_proj\FiltrBW\x64\Debug\JAsm.dll : fatal error LNK1120: 1 unresolved externals

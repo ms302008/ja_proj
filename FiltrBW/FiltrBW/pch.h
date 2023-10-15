@@ -9,6 +9,9 @@
 
 // add headers that you want to pre-compile here
 
+#include <windows.h>
+
+typedef int(_fastcall* MyProc11)(int, int);
 
 
 #endif //PCH_H

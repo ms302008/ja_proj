@@ -8,6 +8,7 @@ namespace CppCLRWinFormsProject {
 	using namespace System::Windows::Forms;
 	using namespace System::Data;
 	using namespace System::Drawing;
+	using namespace System::IO;
 
 	/// <summary>
 	/// Summary for Form1
@@ -156,6 +157,7 @@ namespace CppCLRWinFormsProject {
 			this->bt_wybPlik->TabIndex = 13;
 			this->bt_wybPlik->Text = L"Wybierz plik";
 			this->bt_wybPlik->UseVisualStyleBackColor = true;
+			this->bt_wybPlik->Click += gcnew System::EventHandler(this, &Form1::bt_wybPlik_Click);
 			// 
 			// Form1
 			// 
@@ -181,5 +183,26 @@ namespace CppCLRWinFormsProject {
 
 		}
 #pragma endregion
-	};
+	private: System::Void bt_wybPlik_Click(System::Object^ sender, System::EventArgs^ e) 
+	{
+		Stream^ myStream;
+		OpenFileDialog^ openFileDialog1 = gcnew OpenFileDialog;
+
+		openFileDialog1->InitialDirectory = "";
+		openFileDialog1->Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
+		openFileDialog1->FilterIndex = 1;
+		openFileDialog1->RestoreDirectory = true;
+
+		if (openFileDialog1->ShowDialog() == System::Windows::Forms::DialogResult::OK)
+		{
+			if ((myStream = openFileDialog1->OpenFile()) != nullptr)
+			{
+				// Insert code to read the stream here.
+
+				myStream->Close();
+			}
+		}
+
+	}
+};
 }

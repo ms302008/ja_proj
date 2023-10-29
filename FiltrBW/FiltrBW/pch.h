@@ -11,7 +11,9 @@
 
 #include <windows.h>
 
+
 typedef int(_fastcall* MyProc11)(int, int);
 
+typedef int(_fastcall* testinit)(int, int);
 
 #endif //PCH_H

@@ -295,7 +295,7 @@ namespace CppCLRWinFormsProject {
 				lb_cykleProc->BeginUpdate();
 				lb_cykleProc->Items->Add(img->ToString());
 				lb_cykleProc->EndUpdate();
-
+				//image->Save("SampleImage.bmp", ImageFormat::Bmp);
 				openFileDialog1->OpenFile();
 				//Read the contents of the file into a stream
 				auto fileStream = openFileDialog1->OpenFile();
@@ -321,6 +321,8 @@ namespace CppCLRWinFormsProject {
 	}
 
 private: System::Void Form1_Load(System::Object^ sender, System::EventArgs^ e) {
+	dllHandle = LoadLibrary(L"DLLC.dll");
+
 	bt_wykonaj->Enabled = false;
 	lb_cykleProc->SelectionMode = SelectionMode::None;
 	tb_iloscWatkow->Enabled = false;

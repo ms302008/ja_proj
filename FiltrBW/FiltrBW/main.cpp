@@ -46,8 +46,6 @@ int main()
 	int x1 = 6, y1 = 7; int retVal1 = proceduracpp(x1, y1);
 	int a1 = 5;*/
 
-	dllHandle = LoadLibrary(L"DLLC.dll");
-
   Application::EnableVisualStyles();
   Application::SetCompatibleTextRenderingDefault(false);
   Application::Run(gcnew CppCLRWinFormsProject::Form1());

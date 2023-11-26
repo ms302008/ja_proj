@@ -287,31 +287,43 @@ namespace CppCLRWinFormsProject {
 			if ((myStream = openFileDialog1->OpenFile()) != nullptr)
 			{
 				// Insert code to read the stream here.
-				Image^ img = Image::FromFile(openFileDialog1->FileName);
-				
 				pb_orgObr->Image = Image::FromFile(openFileDialog1->FileName);
 				pb_orgObr->SizeMode = PictureBoxSizeMode::StretchImage;
 
+				pb_grayscaled->Image = (Image^)pb_orgObr->Image->Clone();
+				pb_grayscaled->SizeMode = PictureBoxSizeMode::StretchImage;
+
+				
+				Bitmap^ bmp = gcnew Bitmap(pb_grayscaled->Image);
+				System::Drawing::Imaging::BitmapData^ bmpData = bmp->LockBits(System::Drawing::Rectangle(0, 0, bmp->Width, bmp->Height),
+																				Imaging::ImageLockMode::ReadWrite, bmp->PixelFormat);
+				IntPtr ptr0 = bmpData->Scan0;
+				//int* ptr1 = (int*)ptr0.ToPointer();
+				BYTE* ptr1 = (BYTE*)ptr0.ToPointer();
+				//int** ptr1a= &ptr1;
+				//ptr0 = bmpData->Scan0;
+				
+
+				FreeLibrary(dllHandle);
+				dllHandle = LoadLibrary(L"DLL.dll");
+				to_grayscale proc = (to_grayscale)GetProcAddress(dllHandle, "to_grayscale");
+				long long han = ptr0.ToInt64();
+				long long retVal = proc(han);
+
+				pb_grayscaled->Image = bmp;
+
+				//test log
 				lb_cykleProc->BeginUpdate();
-				lb_cykleProc->Items->Add(img->ToString());
+				lb_cykleProc->Items->Add(ReferenceEquals(pb_orgObr->Image, pb_grayscaled->Image));
+				lb_cykleProc->Items->Add(pb_orgObr->Image->GetType());
+				lb_cykleProc->Items->Add(pb_orgObr->Image->GetPixelFormatSize(System::Drawing::Imaging::PixelFormat::Format24bppRgb));
+				lb_cykleProc->Items->Add(ptr0);
 				lb_cykleProc->EndUpdate();
+
+				bmp->UnlockBits(bmpData);
+
 				//image->Save("SampleImage.bmp", ImageFormat::Bmp);
-				openFileDialog1->OpenFile();
-				//Read the contents of the file into a stream
-				auto fileStream = openFileDialog1->OpenFile();
-				
-				void* intptr = pb_orgObr->Handle.ToPointer(); //??
-				int s = pb_orgObr->Image->Width * pb_orgObr->Image->Height;
-
-				StreamReader^ reader = gcnew StreamReader(fileStream);
-				System::String^ fileContent = reader->ReadToEnd();
-
-				//konwersja System::String^ -> std::string
-				msclr::interop::marshal_context context;
-				fileContentC = context.marshal_as<std::string>(fileContent);
-				
-				
-
+				pb_grayscaled->Image->Save("..\\output.bmp", Imaging::ImageFormat::Bmp);
 				myStream->Close();
 				bt_wykonaj->Enabled = true;
 				tb_iloscWatkow->Enabled = true;
@@ -338,9 +350,9 @@ private: System::Void checkAsm_CheckedChanged(System::Object^ sender, System::Ev
 		FreeLibrary(dllHandle);
 		dllHandle = NULL;
 		dllHandle = LoadLibrary(L"DLL.dll");
-		MyProc11 procedura = (MyProc11)GetProcAddress(dllHandle, "MyProc11");
-		int x = 5, y = 7; int retVal = procedura(x, y);
-		x = 5;
+		/*to_grayscale proc = (to_grayscale)GetProcAddress(dllHandle, "to_grayscale");
+		int x = 5, y = 7; int retVal = proc(ptr0);
+		x = 5;*/
 	}
 	else
 	{

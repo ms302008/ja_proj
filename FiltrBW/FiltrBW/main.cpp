@@ -1,6 +1,8 @@
 /// Filtr czarno-bia³y
 /// Micha³ Suchan
 /// 
+/// ver 0.5 (20.11.23) - klonowanie obrazu zrodlowego i zdobycie adresu na poczatek kopii
+/// 
 /// ver 0.4.1 (29.10.23) - zabezpieczenie kontrolek przed niewlasciwymi danymi i przedwczesnym uruchomieniem
 /// 
 /// ver 0.4 (28.10.23) - proby dostania sie do ladowanego obrazu

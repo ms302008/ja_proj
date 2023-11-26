@@ -16,4 +16,6 @@ typedef int(_fastcall* MyProc11)(int, int);
 
 typedef int(_fastcall* testinit)(int, int);
 
+//typedef bool(_fastcall* to_grayscale)(IntPtr);
+
 #endif //PCH_H

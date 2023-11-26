@@ -4,6 +4,8 @@
 #include <msclr\marshal_cppstd.h>
 
 HINSTANCE dllHandle = NULL;
+//IntPtr ptr0;
+
 std::string fileContentC = "";
 
 void MarshalString(String^ s, std::string& os) {
@@ -21,3 +23,5 @@ void MarshalString(String^ s, std::wstring& os) {
     os = chars;
     Marshal::FreeHGlobal(IntPtr((void*)chars));
 }
+
+typedef long long(_fastcall* to_grayscale)(long long);

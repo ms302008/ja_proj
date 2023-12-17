@@ -1,5 +1,5 @@
 ﻿  Assembling filtr.asm...
-filtr.asm(44): warning A6004: procedure argument or local not referenced : ptro
+filtr.asm(54): warning A6004: procedure argument or local not referenced : ptro
      Creating library D:\git\ja_proj\FiltrBW\x64\Debug\DLL.lib and object D:\git\ja_proj\FiltrBW\x64\Debug\DLL.exp
 DLL.exp : warning LNK4070: /OUT:JAAsm.dll directive in .EXP differs from output filename 'D:\git\ja_proj\FiltrBW\x64\Debug\DLL.dll'; ignoring directive
   DLL.vcxproj -> D:\git\ja_proj\FiltrBW\x64\Debug\DLL.dll

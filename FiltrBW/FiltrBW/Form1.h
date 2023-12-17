@@ -303,7 +303,7 @@ namespace CppCLRWinFormsProject {
 				//int** ptr1a= &ptr1;
 				//ptr0 = bmpData->Scan0;
 				
-
+				//piksele w pamieci od lewej do prawej, od gory w dol, BGR
 				FreeLibrary(dllHandle);
 				dllHandle = LoadLibrary(L"DLL.dll");
 				to_grayscale proc = (to_grayscale)GetProcAddress(dllHandle, "to_grayscale");

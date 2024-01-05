@@ -272,12 +272,14 @@ namespace CppCLRWinFormsProject {
 #pragma endregion
 	private: System::Void bt_wybPlik_Click(System::Object^ sender, System::EventArgs^ e) 
 	{
-		//TODO: zwolnienie istniejacych obrazow (if any) przed wladowaniem nowych
+		//zwolnienie istniejacych obrazow (if any) przed wladowaniem nowych
+		FreeGrayscaledPictureBox();
+		FreeOrgPictureBox();
+
 		Stream^ myStream;
 		OpenFileDialog^ openFileDialog1 = gcnew OpenFileDialog;
 
 		openFileDialog1->InitialDirectory = "";
-		//openFileDialog1->Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
 		openFileDialog1->Filter = "Image Files (*.bmp;*.jpg;*.jpeg,*.png)|*.BMP;*.JPG;*.JPEG;*.PNG";
 		openFileDialog1->FilterIndex = 1;
 		openFileDialog1->RestoreDirectory = true;
@@ -289,41 +291,6 @@ namespace CppCLRWinFormsProject {
 				// Insert code to read the stream here.
 				pb_orgObr->Image = Image::FromFile(openFileDialog1->FileName);
 				pb_orgObr->SizeMode = PictureBoxSizeMode::StretchImage;
-
-				pb_grayscaled->Image = (Image^)pb_orgObr->Image->Clone();
-				pb_grayscaled->SizeMode = PictureBoxSizeMode::StretchImage;
-
-				
-				Bitmap^ bmp = gcnew Bitmap(pb_grayscaled->Image);
-				System::Drawing::Imaging::BitmapData^ bmpData = bmp->LockBits(System::Drawing::Rectangle(0, 0, bmp->Width, bmp->Height),
-																				Imaging::ImageLockMode::ReadWrite, bmp->PixelFormat);
-				IntPtr ptr0 = bmpData->Scan0;
-				//int* ptr1 = (int*)ptr0.ToPointer();
-				BYTE* ptr1 = (BYTE*)ptr0.ToPointer();
-				//int** ptr1a= &ptr1;
-				//ptr0 = bmpData->Scan0;
-				
-				//piksele w pamieci od lewej do prawej, od gory w dol, BGR
-				FreeLibrary(dllHandle);
-				dllHandle = LoadLibrary(L"DLL.dll");
-				to_grayscale proc = (to_grayscale)GetProcAddress(dllHandle, "to_grayscale");
-				long long han = ptr0.ToInt64();
-				long long retVal = proc(han);
-
-				pb_grayscaled->Image = bmp;
-
-				//test log
-				lb_cykleProc->BeginUpdate();
-				lb_cykleProc->Items->Add(ReferenceEquals(pb_orgObr->Image, pb_grayscaled->Image));
-				lb_cykleProc->Items->Add(pb_orgObr->Image->GetType());
-				lb_cykleProc->Items->Add(pb_orgObr->Image->GetPixelFormatSize(System::Drawing::Imaging::PixelFormat::Format24bppRgb));
-				lb_cykleProc->Items->Add(ptr0);
-				lb_cykleProc->EndUpdate();
-
-				bmp->UnlockBits(bmpData);
-
-				//image->Save("SampleImage.bmp", ImageFormat::Bmp);
-				pb_grayscaled->Image->Save("..\\output.bmp", Imaging::ImageFormat::Bmp);
 				myStream->Close();
 				bt_wykonaj->Enabled = true;
 				tb_iloscWatkow->Enabled = true;
@@ -334,6 +301,7 @@ namespace CppCLRWinFormsProject {
 
 private: System::Void Form1_Load(System::Object^ sender, System::EventArgs^ e) {
 	dllHandle = LoadLibrary(L"DLLC.dll");
+	PrintToListBox(lb_cykleProc, "Zaladowano biblioteke C++!");
 
 	bt_wykonaj->Enabled = false;
 	lb_cykleProc->SelectionMode = SelectionMode::None;
@@ -344,28 +312,47 @@ private: System::Void pictureBox3_Click(System::Object^ sender, System::EventArg
 }
 private: System::Void checkAsm_CheckedChanged(System::Object^ sender, System::EventArgs^ e) 
 {
+	FreeGrayscaledPictureBox();//debug
+
 	if (checkAsm->Checked)
 	{
-		//checkAsm->Text = "Checked";
 		FreeLibrary(dllHandle);
 		dllHandle = NULL;
 		dllHandle = LoadLibrary(L"DLL.dll");
-		/*to_grayscale proc = (to_grayscale)GetProcAddress(dllHandle, "to_grayscale");
-		int x = 5, y = 7; int retVal = proc(ptr0);
-		x = 5;*/
+		PrintToListBox(lb_cykleProc, "Zaladowano biblioteke asm!");
 	}
 	else
 	{
-		//checkAsm->Text = "Unchecked";
 		FreeLibrary(dllHandle);
 		dllHandle = NULL;
 		dllHandle = LoadLibrary(L"DLLC.dll");
-		testinit proceduracpp = (testinit)GetProcAddress(dllHandle, "testinit");
-		int x1 = 6, y1 = 7; int retVal1 = proceduracpp(x1, y1);
-		x1 = 6;
+		PrintToListBox(lb_cykleProc, "Zaladowano biblioteke C++!");
 	}
 }
+
 private: System::Void bt_wykonaj_Click(System::Object^ sender, System::EventArgs^ e) {
+	FreeGrayscaledPictureBox();
+	pb_grayscaled->Image = (Image^)pb_orgObr->Image->Clone();
+	pb_grayscaled->SizeMode = PictureBoxSizeMode::StretchImage;
+
+	Bitmap^ bmp = gcnew Bitmap(pb_grayscaled->Image);
+	System::Drawing::Imaging::BitmapData^ bmpData = bmp->LockBits(System::Drawing::Rectangle(0, 0, bmp->Width, bmp->Height),
+		Imaging::ImageLockMode::ReadWrite, bmp->PixelFormat);
+	IntPtr cliimgptr = bmpData->Scan0;
+	uint8_t* cimgptr = (uint8_t*) cliimgptr.ToPointer();
+
+	//piksele w pamieci od lewej do prawej, od gory w dol, BGR
+	to_grayscale proc = (to_grayscale)GetProcAddress(dllHandle, "to_grayscale");
+
+	proc(cimgptr, 0, pb_grayscaled->Image->Width*pb_grayscaled->Image->Height);//debug
+
+	/*for (int i = 0; i < pb_grayscaled->Image->Height; ++i) {
+		proc(cimgptr, i * pb_grayscaled->Image->Width, pb_grayscaled->Image->Width);
+	}*/
+
+	pb_grayscaled->Image = bmp; //nie kopiuje? czy trzeba delete bmp?
+	bmp->UnlockBits(bmpData);
+	pb_grayscaled->Image->Save("..\\output.bmp", Imaging::ImageFormat::Bmp);
 }
 private: System::Void lb_cykleProc_SelectedIndexChanged(System::Object^ sender, System::EventArgs^ e) {
 }
@@ -386,6 +373,22 @@ private: System::Void tb_iloscWatkow_KeyPress(System::Object^ sender, System::Wi
 	if (!Char::IsDigit(e->KeyChar) && e->KeyChar != 0x08)
 	{
 		e->Handled = true;
+	}
+}
+private: void FreeGrayscaledPictureBox() {
+	if (pb_grayscaled->Image != nullptr)
+	{
+		delete this->pb_grayscaled->Image;
+		pb_grayscaled->Image = nullptr;
+		PrintToListBox(lb_cykleProc, "usunieto z pamieci czarno-bialy obraz");
+	}
+}
+private: void FreeOrgPictureBox() {
+	if (pb_orgObr->Image != nullptr)
+	{
+		delete this->pb_orgObr->Image;
+		pb_orgObr->Image = nullptr;
+		PrintToListBox(lb_cykleProc, "usunieto z pamieci konwertowany obraz");
 	}
 }
 };

@@ -4,7 +4,6 @@
 #include <msclr\marshal_cppstd.h>
 
 HINSTANCE dllHandle = NULL;
-//IntPtr ptr0;
 
 std::string fileContentC = "";
 
@@ -24,4 +23,10 @@ void MarshalString(String^ s, std::wstring& os) {
     Marshal::FreeHGlobal(IntPtr((void*)chars));
 }
 
-typedef long long(_fastcall* to_grayscale)(long long);
+typedef long long(_fastcall* to_grayscale)(uint8_t*, int, int);
+
+void PrintToListBox(System::Windows::Forms::ListBox^ lbox, String^ msg) {
+    lbox->BeginUpdate();
+    lbox->Items->Add(msg);
+    lbox->EndUpdate();
+}

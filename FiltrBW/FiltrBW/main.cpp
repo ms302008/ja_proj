@@ -1,6 +1,8 @@
 /// Filtr czarno-bia³y
 /// Micha³ Suchan
 /// 
+/// ver 0.6 (05.01.24) - uporzadkowano kod po skonczeniu pisania obydwoch DLLek
+/// 
 /// ver 0.5 (20.11.23) - klonowanie obrazu zrodlowego i zdobycie adresu na poczatek kopii
 /// 
 /// ver 0.4.1 (29.10.23) - zabezpieczenie kontrolek przed niewlasciwymi danymi i przedwczesnym uruchomieniem
@@ -21,11 +23,6 @@
 
 using namespace System;
 
- //int main(array<System::String ^> ^args)
- //{
- //   return 0;
- //}
-
 #include "Form1.h"
 
 using namespace System::Windows::Forms;
@@ -33,26 +30,11 @@ using namespace System::Windows::Forms;
 [STAThread]
 int main()
 {
-
-	//HINSTANCE dllHandle = NULL;
-	/*dllHandle = LoadLibrary(L"DLL.dll");
-	MyProc11 procedura = (MyProc11)GetProcAddress(dllHandle, "MyProc11");
-	int x = 5, y = 7; int retVal = procedura(x, y);
-	int a = 5;
-
-	FreeLibrary(dllHandle);
-	dllHandle = NULL;
-	dllHandle = LoadLibrary(L"DLLC.dll");
-	DWORD error = GetLastError();
-	testinit proceduracpp = (testinit)GetProcAddress(dllHandle, "testinit");
-	int x1 = 6, y1 = 7; int retVal1 = proceduracpp(x1, y1);
-	int a1 = 5;*/
-
   Application::EnableVisualStyles();
   Application::SetCompatibleTextRenderingDefault(false);
   Application::Run(gcnew CppCLRWinFormsProject::Form1());
   
-  if (dllHandle != NULL) {
+  if (dllHandle != nullptr) {
 	  FreeLibrary(dllHandle);
   }
   return 0;

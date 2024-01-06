@@ -2,6 +2,7 @@
 #include "pch.h"
 #include <string>
 #include <msclr\marshal_cppstd.h>
+#include <thread>
 
 HINSTANCE dllHandle = NULL;
 

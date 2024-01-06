@@ -297,6 +297,8 @@ namespace CppCLRWinFormsProject {
 			}
 		}
 
+		//TODO: histogram oryginalnego obrazu
+
 	}
 
 private: System::Void Form1_Load(System::Object^ sender, System::EventArgs^ e) {
@@ -332,6 +334,7 @@ private: System::Void checkAsm_CheckedChanged(System::Object^ sender, System::Ev
 
 private: System::Void bt_wykonaj_Click(System::Object^ sender, System::EventArgs^ e) {
 	FreeGrayscaledPictureBox();
+	//tutaj sie dzieja jakies zle rzeczy z kopiami
 	pb_grayscaled->Image = (Image^)pb_orgObr->Image->Clone();
 	pb_grayscaled->SizeMode = PictureBoxSizeMode::StretchImage;
 
@@ -344,15 +347,38 @@ private: System::Void bt_wykonaj_Click(System::Object^ sender, System::EventArgs
 	//piksele w pamieci od lewej do prawej, od gory w dol, BGR
 	to_grayscale proc = (to_grayscale)GetProcAddress(dllHandle, "to_grayscale");
 
-	proc(cimgptr, 0, pb_grayscaled->Image->Width*pb_grayscaled->Image->Height);//debug
+	//threads!
+	std::string temp = "";
+	MarshalString(tb_iloscWatkow->Text, temp);
+	int thread_amount = stoi(temp);
 
-	/*for (int i = 0; i < pb_grayscaled->Image->Height; ++i) {
-		proc(cimgptr, i * pb_grayscaled->Image->Width, pb_grayscaled->Image->Width);
-	}*/
+	int lines_per_thread = pb_grayscaled->Image->Height / thread_amount;
+	int extra_lines = pb_grayscaled->Image->Height % thread_amount;
+	std::vector<std::thread> threads;
+	int handled_extra_lines = 0;
+	for (int i = 0; i < thread_amount; ++i) {
+		if (extra_lines) {
+			threads.push_back(std::thread(proc, cimgptr,
+				i * lines_per_thread + handled_extra_lines * pb_grayscaled->Image->Width, lines_per_thread + 1 * pb_grayscaled->Image->Width));
+			++handled_extra_lines;
+			--extra_lines;
+		}
+		else
+			threads.push_back(std::thread(proc, cimgptr, i * lines_per_thread * pb_grayscaled->Image->Width, lines_per_thread * pb_grayscaled->Image->Width));
+	}
+	for (auto& th : threads) {
+		th.join();
+	}
+
+	//proc(cimgptr, 0, pb_grayscaled->Image->Width*pb_grayscaled->Image->Height);//debug
 
 	pb_grayscaled->Image = bmp; //nie kopiuje? czy trzeba delete bmp?
 	bmp->UnlockBits(bmpData);
 	pb_grayscaled->Image->Save("..\\output.bmp", Imaging::ImageFormat::Bmp);
+
+	//TODO: histogram grayscale
+
+
 }
 private: System::Void lb_cykleProc_SelectedIndexChanged(System::Object^ sender, System::EventArgs^ e) {
 }

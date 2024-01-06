@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+
 /// Filtr czarno-bia³y
 /// Micha³ Suchan
 /// 

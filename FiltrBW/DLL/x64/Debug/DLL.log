@@ -2,3 +2,5 @@
      Creating library D:\git\ja_proj\FiltrBW\x64\Debug\DLL.lib and object D:\git\ja_proj\FiltrBW\x64\Debug\DLL.exp
 DLL.exp : warning LNK4070: /OUT:JAAsm.dll directive in .EXP differs from output filename 'D:\git\ja_proj\FiltrBW\x64\Debug\DLL.dll'; ignoring directive
   DLL.vcxproj -> D:\git\ja_proj\FiltrBW\x64\Debug\DLL.dll
+  'pwsh.exe' is not recognized as an internal or external command,
+  operable program or batch file.

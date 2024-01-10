@@ -1,6 +1,6 @@
-D:\git\ja_proj\FiltrBW\FiltrBW\x64\Debug\FiltrBW.vcxproj.AssemblyReference.cache
-D:\git\ja_proj\FiltrBW\FiltrBW\x64\Debug\FiltrBW.Form1.resources
-D:\git\ja_proj\FiltrBW\FiltrBW\x64\Debug\FiltrBW.vcxproj.GenerateResource.cache
 C:\ja_proj\FiltrBW\FiltrBW\x64\Debug\FiltrBW.vcxproj.AssemblyReference.cache
 C:\ja_proj\FiltrBW\FiltrBW\x64\Debug\FiltrBW.Form1.resources
 C:\ja_proj\FiltrBW\FiltrBW\x64\Debug\FiltrBW.vcxproj.GenerateResource.cache
+D:\git\ja_proj\FiltrBW\FiltrBW\x64\Debug\FiltrBW.vcxproj.AssemblyReference.cache
+D:\git\ja_proj\FiltrBW\FiltrBW\x64\Debug\FiltrBW.Form1.resources
+D:\git\ja_proj\FiltrBW\FiltrBW\x64\Debug\FiltrBW.vcxproj.GenerateResource.cache

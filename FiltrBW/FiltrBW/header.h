@@ -3,6 +3,9 @@
 #include <string>
 #include <msclr\marshal_cppstd.h>
 #include <thread>
+#include "opencv2/highgui.hpp"
+#include "opencv2/imgcodecs.hpp"
+#include "opencv2/imgproc.hpp"
 
 HINSTANCE dllHandle = NULL;
 

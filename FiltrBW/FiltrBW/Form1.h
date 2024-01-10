@@ -272,9 +272,11 @@ namespace CppCLRWinFormsProject {
 #pragma endregion
 	private: System::Void bt_wybPlik_Click(System::Object^ sender, System::EventArgs^ e) 
 	{
-		//zwolnienie istniejacych obrazow (if any) przed wladowaniem nowych
-		FreeGrayscaledPictureBox();
-		FreeOrgPictureBox();
+		//zwolnienie istniejacych obrazow i ich histogramow (if any) przed wladowaniem nowych
+		FreePictureBox(pb_grayscaled);
+		FreePictureBox(pb_grayscaledHist);
+		FreePictureBox(pb_orgObr);
+		FreePictureBox(pb_orgObrHist);
 
 		Stream^ myStream;
 		OpenFileDialog^ openFileDialog1 = gcnew OpenFileDialog;
@@ -291,13 +293,16 @@ namespace CppCLRWinFormsProject {
 				// Insert code to read the stream here.
 				pb_orgObr->Image = Image::FromFile(openFileDialog1->FileName);
 				pb_orgObr->SizeMode = PictureBoxSizeMode::StretchImage;
+
+				cv::String str = msclr::interop::marshal_as<std::string>(openFileDialog1->FileName);
+
+				DrawHistogram(str, pb_orgObrHist);
+
 				myStream->Close();
 				bt_wykonaj->Enabled = true;
 				tb_iloscWatkow->Enabled = true;
 			}
 		}
-
-		//TODO: histogram oryginalnego obrazu
 
 	}
 
@@ -314,7 +319,7 @@ private: System::Void pictureBox3_Click(System::Object^ sender, System::EventArg
 }
 private: System::Void checkAsm_CheckedChanged(System::Object^ sender, System::EventArgs^ e) 
 {
-	FreeGrayscaledPictureBox();//debug
+	FreePictureBox(pb_grayscaled);//debug
 
 	if (checkAsm->Checked)
 	{
@@ -333,8 +338,8 @@ private: System::Void checkAsm_CheckedChanged(System::Object^ sender, System::Ev
 }
 
 private: System::Void bt_wykonaj_Click(System::Object^ sender, System::EventArgs^ e) {
-	FreeGrayscaledPictureBox();
-	//tutaj sie dzieja jakies zle rzeczy z kopiami
+	FreePictureBox(pb_grayscaled);
+	//TODO: tutaj sie dzieja jakies zle rzeczy z kopiami?
 	pb_grayscaled->Image = (Image^)pb_orgObr->Image->Clone();
 	pb_grayscaled->SizeMode = PictureBoxSizeMode::StretchImage;
 
@@ -373,11 +378,12 @@ private: System::Void bt_wykonaj_Click(System::Object^ sender, System::EventArgs
 	//proc(cimgptr, 0, pb_grayscaled->Image->Width*pb_grayscaled->Image->Height);//debug
 
 	pb_grayscaled->Image = bmp; //nie kopiuje? czy trzeba delete bmp?
-	bmp->UnlockBits(bmpData);
+	//bmp->UnlockBits(bmpData);
 	pb_grayscaled->Image->Save("..\\output.bmp", Imaging::ImageFormat::Bmp);
 
 	//TODO: histogram grayscale
-
+	DrawHistogram("..\\output.bmp", pb_grayscaledHist);
+	bmp->UnlockBits(bmpData);
 
 }
 private: System::Void lb_cykleProc_SelectedIndexChanged(System::Object^ sender, System::EventArgs^ e) {
@@ -401,21 +407,57 @@ private: System::Void tb_iloscWatkow_KeyPress(System::Object^ sender, System::Wi
 		e->Handled = true;
 	}
 }
-private: void FreeGrayscaledPictureBox() {
-	if (pb_grayscaled->Image != nullptr)
+
+private: void FreePictureBox(PictureBox^ picbox) {
+	if (picbox->Image != nullptr)
 	{
-		delete this->pb_grayscaled->Image;
-		pb_grayscaled->Image = nullptr;
-		PrintToListBox(lb_cykleProc, "usunieto z pamieci czarno-bialy obraz");
+		delete picbox->Image;
+		picbox->Image = nullptr;
 	}
+	//clear imagebox (for histograms)
+	System::Drawing::Graphics^ graphics = picbox->CreateGraphics();
+	graphics->Clear(SystemColors::Control);
+	delete graphics;
 }
-private: void FreeOrgPictureBox() {
-	if (pb_orgObr->Image != nullptr)
+
+private: void DrawHistogram(cv::String imgpath, PictureBox^ picbox) {
+	cv::Mat src = cv::imread(cv::samples::findFile(imgpath, cv::IMREAD_COLOR));
+
+	std::vector<cv::Mat> bgr_planes;
+	split(src, bgr_planes);
+	int histSize = 256;
+	float range[] = { 0, 256 }; //the upper boundary is exclusive
+	const float* histRange[] = { range };
+	bool uniform = true, accumulate = false;
+	cv::Mat b_hist, g_hist, r_hist;
+	calcHist(&bgr_planes[0], 1, 0, cv::Mat(), b_hist, 1, &histSize, histRange, uniform, accumulate);
+	calcHist(&bgr_planes[1], 1, 0, cv::Mat(), g_hist, 1, &histSize, histRange, uniform, accumulate);
+	calcHist(&bgr_planes[2], 1, 0, cv::Mat(), r_hist, 1, &histSize, histRange, uniform, accumulate);
+	int hist_w = 512, hist_h = 400;
+	int bin_w = cvRound((double)hist_w / histSize);
+	cv::Mat histImage(hist_h, hist_w, CV_8UC3, cv::Scalar(0, 0, 0));
+	normalize(b_hist, b_hist, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat());
+	normalize(g_hist, g_hist, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat());
+	normalize(r_hist, r_hist, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat());
+	for (int i = 1; i < histSize; i++)
 	{
-		delete this->pb_orgObr->Image;
-		pb_orgObr->Image = nullptr;
-		PrintToListBox(lb_cykleProc, "usunieto z pamieci konwertowany obraz");
+		line(histImage, cv::Point(bin_w * (i - 1), hist_h - cvRound(b_hist.at<float>(i - 1))),
+			cv::Point(bin_w * (i), hist_h - cvRound(b_hist.at<float>(i))),
+			cv::Scalar(255, 0, 0), 2, 8, 0);
+		line(histImage, cv::Point(bin_w * (i - 1), hist_h - cvRound(g_hist.at<float>(i - 1))),
+			cv::Point(bin_w * (i), hist_h - cvRound(g_hist.at<float>(i))),
+			cv::Scalar(0, 255, 0), 2, 8, 0);
+		line(histImage, cv::Point(bin_w * (i - 1), hist_h - cvRound(r_hist.at<float>(i - 1))),
+			cv::Point(bin_w * (i), hist_h - cvRound(r_hist.at<float>(i))),
+			cv::Scalar(0, 0, 255), 2, 8, 0);
 	}
+
+	System::Drawing::Graphics^ graphics = picbox->CreateGraphics();
+	System::IntPtr ptr(histImage.ptr());
+	System::Drawing::Bitmap^ b = gcnew System::Drawing::Bitmap(histImage.cols, histImage.rows, histImage.step, System::Drawing::Imaging::PixelFormat::Format24bppRgb, ptr);
+	System::Drawing::RectangleF rect(0, 0, picbox->Width, picbox->Height);
+	graphics->DrawImage(b, rect);
+	delete graphics;
 }
 };
 }

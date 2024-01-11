@@ -361,6 +361,7 @@ private: System::Void bt_wykonaj_Click(System::Object^ sender, System::EventArgs
 	int extra_lines = pb_grayscaled->Image->Height % thread_amount;
 	std::vector<std::thread> threads;
 	int handled_extra_lines = 0;
+	//duzy obraz testowy na wiekszej ilosci watkow zwraca oryginal!!
 	for (int i = 0; i < thread_amount; ++i) {
 		if (extra_lines) {
 			threads.push_back(std::thread(proc, cimgptr,

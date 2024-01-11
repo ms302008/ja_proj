@@ -4,6 +4,8 @@
 /// Filtr czarno-bia³y
 /// Micha³ Suchan
 /// 
+/// ver 1.1 (11.05.24) - naprawienie funkcji
+/// 
 /// ver 1.0 (05.01.24) - przesuniecie, konwersja, zapis
 /// 
 /// ver 0.1 (23.10.23) - w koncu stworzono bez bledu DLL w wersji wysokopoziomowej

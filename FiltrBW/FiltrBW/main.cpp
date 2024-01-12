@@ -1,6 +1,10 @@
 /// Filtr czarno-bia³y
 /// Micha³ Suchan
 /// 
+/// ver 0.8 (12.01.24) - uporzadkowano kod, naprawiono watki
+/// 
+/// ver 0.7 (06.01.24) - dodano watki
+/// 
 /// ver 0.6 (05.01.24) - uporzadkowano kod po skonczeniu pisania obydwoch DLLek
 /// 
 /// ver 0.5 (20.11.23) - klonowanie obrazu zrodlowego i zdobycie adresu na poczatek kopii

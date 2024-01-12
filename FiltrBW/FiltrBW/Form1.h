@@ -58,7 +58,7 @@ namespace CppCLRWinFormsProject {
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
-		System::ComponentModel::Container ^components;
+		System::ComponentModel::Container^ components;
 
 #pragma region Windows Form Designer generated code
 		/// <summary>
@@ -111,7 +111,6 @@ namespace CppCLRWinFormsProject {
 			this->lb_cykleProc->Name = L"lb_cykleProc";
 			this->lb_cykleProc->Size = System::Drawing::Size(260, 56);
 			this->lb_cykleProc->TabIndex = 0;
-			this->lb_cykleProc->SelectedIndexChanged += gcnew System::EventHandler(this, &Form1::lb_cykleProc_SelectedIndexChanged);
 			// 
 			// bt_wykonaj
 			// 
@@ -215,7 +214,6 @@ namespace CppCLRWinFormsProject {
 			this->pb_grayscaledHist->Size = System::Drawing::Size(321, 212);
 			this->pb_grayscaledHist->TabIndex = 1;
 			this->pb_grayscaledHist->TabStop = false;
-			this->pb_grayscaledHist->Click += gcnew System::EventHandler(this, &Form1::pictureBox3_Click);
 			// 
 			// gb_iloscWatkow
 			// 
@@ -270,195 +268,189 @@ namespace CppCLRWinFormsProject {
 
 		}
 #pragma endregion
-	private: System::Void bt_wybPlik_Click(System::Object^ sender, System::EventArgs^ e) 
+	private: System::Void Form1_Load(System::Object^ sender, System::EventArgs^ e) {
+		dllHandle = LoadLibrary(L"DLLC.dll");
+		PrintToListBox(lb_cykleProc, "Zaladowano biblioteke C++!");
+
+		bt_wykonaj->Enabled = false;
+		lb_cykleProc->SelectionMode = SelectionMode::None;
+		tb_iloscWatkow->Enabled = false;
+		tb_iloscWatkow->MaxLength = 2;
+	}
+
+	private: System::Void checkAsm_CheckedChanged(System::Object^ sender, System::EventArgs^ e)
 	{
-		//zwolnienie istniejacych obrazow i ich histogramow (if any) przed wladowaniem nowych
-		FreePictureBox(pb_grayscaled);
-		FreePictureBox(pb_grayscaledHist);
-		FreePictureBox(pb_orgObr);
-		FreePictureBox(pb_orgObrHist);
-
-		Stream^ myStream;
-		OpenFileDialog^ openFileDialog1 = gcnew OpenFileDialog;
-
-		openFileDialog1->InitialDirectory = "";
-		openFileDialog1->Filter = "Image Files (*.bmp;*.jpg;*.jpeg,*.png)|*.BMP;*.JPG;*.JPEG;*.PNG";
-		openFileDialog1->FilterIndex = 1;
-		openFileDialog1->RestoreDirectory = true;
-
-		if (openFileDialog1->ShowDialog() == System::Windows::Forms::DialogResult::OK)
+		if (checkAsm->Checked)
 		{
-			if ((myStream = openFileDialog1->OpenFile()) != nullptr)
+			FreeLibrary(dllHandle);
+			dllHandle = NULL;
+			dllHandle = LoadLibrary(L"DLL.dll");
+			PrintToListBox(lb_cykleProc, "Zaladowano biblioteke asm!");
+		}
+		else
+		{
+			FreeLibrary(dllHandle);
+			dllHandle = NULL;
+			dllHandle = LoadLibrary(L"DLLC.dll");
+			PrintToListBox(lb_cykleProc, "Zaladowano biblioteke C++!");
+		}
+	}
+	private: System::Void bt_wybPlik_Click(System::Object^ sender, System::EventArgs^ e)
+	{
+		Stream^ myStream;
+		OpenFileDialog^ myOpenFileDialog = gcnew OpenFileDialog;
+
+		myOpenFileDialog->InitialDirectory = "";
+		myOpenFileDialog->Filter = "Image Files (*.bmp;*.jpg;*.jpeg,*.png)|*.BMP;*.JPG;*.JPEG;*.PNG";
+		myOpenFileDialog->FilterIndex = 1;
+		myOpenFileDialog->RestoreDirectory = true;
+
+		if (myOpenFileDialog->ShowDialog() == System::Windows::Forms::DialogResult::OK)
+		{
+			if ((myStream = myOpenFileDialog->OpenFile()) != nullptr)
 			{
-				// Insert code to read the stream here.
-				pb_orgObr->Image = Image::FromFile(openFileDialog1->FileName);
+				//Code to read the stream
+				//zwolnienie istniejacych obrazow i ich histogramow (if any) przed wladowaniem nowych
+				FreePictureBox(pb_grayscaled);
+				FreePictureBox(pb_grayscaledHist);
+				FreePictureBox(pb_orgObr);
+				FreePictureBox(pb_orgObrHist);
+
+				pb_orgObr->Image = Image::FromFile(myOpenFileDialog->FileName);
 				pb_orgObr->SizeMode = PictureBoxSizeMode::StretchImage;
 
-				cv::String str = msclr::interop::marshal_as<std::string>(openFileDialog1->FileName);
+				cv::String path = msclr::interop::marshal_as<std::string>(myOpenFileDialog->FileName);
 
-				DrawHistogram(str, pb_orgObrHist);
+				DrawHistogram(path, pb_orgObrHist);
 
 				myStream->Close();
 				bt_wykonaj->Enabled = true;
 				tb_iloscWatkow->Enabled = true;
 			}
 		}
-
+		delete myOpenFileDialog;
 	}
 
-private: System::Void Form1_Load(System::Object^ sender, System::EventArgs^ e) {
-	dllHandle = LoadLibrary(L"DLLC.dll");
-	PrintToListBox(lb_cykleProc, "Zaladowano biblioteke C++!");
+	private: System::Void bt_wykonaj_Click(System::Object^ sender, System::EventArgs^ e) {
+		bt_wykonaj->Enabled = false;
+		FreePictureBox(pb_grayscaled);
+		FreePictureBox(pb_grayscaledHist);
 
-	bt_wykonaj->Enabled = false;
-	lb_cykleProc->SelectionMode = SelectionMode::None;
-	tb_iloscWatkow->Enabled = false;
-	tb_iloscWatkow->MaxLength = 2;
-}
-private: System::Void pictureBox3_Click(System::Object^ sender, System::EventArgs^ e) {
-}
-private: System::Void checkAsm_CheckedChanged(System::Object^ sender, System::EventArgs^ e) 
-{
-	FreePictureBox(pb_grayscaled);//debug
+		Bitmap^ bmp = gcnew Bitmap(pb_orgObr->Image);
+		System::Drawing::Imaging::BitmapData^ bmpData = bmp->LockBits(System::Drawing::Rectangle(0, 0, bmp->Width, bmp->Height),
+			Imaging::ImageLockMode::ReadWrite, bmp->PixelFormat);
+		IntPtr cliimgptr = bmpData->Scan0;
+		uint8_t* cimgptr = (uint8_t*)cliimgptr.ToPointer();
 
-	if (checkAsm->Checked)
-	{
-		FreeLibrary(dllHandle);
-		dllHandle = NULL;
-		dllHandle = LoadLibrary(L"DLL.dll");
-		PrintToListBox(lb_cykleProc, "Zaladowano biblioteke asm!");
+		//piksele w pamieci od lewej do prawej, od gory w dol, BGR
+		to_grayscale proc = (to_grayscale)GetProcAddress(dllHandle, "to_grayscale");
+
+		//threads
+		std::string temp = "";
+		MarshalString(tb_iloscWatkow->Text, temp);
+		int thread_amount = stoi(temp);
+
+		if (pb_orgObr->Image->Height < thread_amount)
+			thread_amount = pb_orgObr->Image->Height;
+
+		int lines_per_thread = pb_orgObr->Image->Height / thread_amount;
+		int extra_lines = pb_orgObr->Image->Height % thread_amount;
+		std::vector<std::thread> threads;
+		int handled_extra_lines = 0;
+
+		for (int i = 0; i < thread_amount; ++i) {
+			if (extra_lines) {
+				threads.push_back(std::thread(proc, cimgptr,
+					(i * lines_per_thread + handled_extra_lines) * pb_orgObr->Image->Width, (lines_per_thread + 1) * pb_orgObr->Image->Width));
+				++handled_extra_lines;
+				--extra_lines;
+			}
+			else
+				threads.push_back(std::thread(proc, cimgptr, (i * lines_per_thread + handled_extra_lines) * pb_orgObr->Image->Width, lines_per_thread * pb_orgObr->Image->Width));
+		}
+		for (auto& th : threads) {
+			th.join();
+		}
+
+		pb_grayscaled->Image = bmp; //przez referencje
+		pb_grayscaled->SizeMode = PictureBoxSizeMode::StretchImage;
+		pb_grayscaled->Image->Save("..\\output.bmp", Imaging::ImageFormat::Bmp);
+
+		//histogram grayscale
+		DrawHistogram("..\\output.bmp", pb_grayscaledHist);
+		bmp->UnlockBits(bmpData);
+		bt_wykonaj->Enabled = true;
 	}
-	else
-	{
-		FreeLibrary(dllHandle);
-		dllHandle = NULL;
-		dllHandle = LoadLibrary(L"DLLC.dll");
-		PrintToListBox(lb_cykleProc, "Zaladowano biblioteke C++!");
-	}
-}
 
-private: System::Void bt_wykonaj_Click(System::Object^ sender, System::EventArgs^ e) {
-	FreePictureBox(pb_grayscaled);
-	//TODO: tutaj sie dzieja jakies zle rzeczy z kopiami?
-	pb_grayscaled->Image = (Image^)pb_orgObr->Image->Clone();
-	pb_grayscaled->SizeMode = PictureBoxSizeMode::StretchImage;
+	private: System::Void tb_iloscWatkow_TextChanged(System::Object^ sender, System::EventArgs^ e) {
+		int a = 0;
+		if (!tb_iloscWatkow->Text->IsNullOrEmpty(tb_iloscWatkow->Text))
+			a = Convert::ToInt16(tb_iloscWatkow->Text);
 
-	Bitmap^ bmp = gcnew Bitmap(pb_grayscaled->Image);
-	System::Drawing::Imaging::BitmapData^ bmpData = bmp->LockBits(System::Drawing::Rectangle(0, 0, bmp->Width, bmp->Height),
-		Imaging::ImageLockMode::ReadWrite, bmp->PixelFormat);
-	IntPtr cliimgptr = bmpData->Scan0;
-	uint8_t* cimgptr = (uint8_t*) cliimgptr.ToPointer();
-
-	//piksele w pamieci od lewej do prawej, od gory w dol, BGR
-	to_grayscale proc = (to_grayscale)GetProcAddress(dllHandle, "to_grayscale");
-
-	//threads!
-	std::string temp = "";
-	MarshalString(tb_iloscWatkow->Text, temp);
-	int thread_amount = stoi(temp);
-
-	int lines_per_thread = pb_grayscaled->Image->Height / thread_amount;
-	int extra_lines = pb_grayscaled->Image->Height % thread_amount;
-	std::vector<std::thread> threads;
-	int handled_extra_lines = 0;
-	//duzy obraz testowy na wiekszej ilosci watkow zwraca oryginal!!
-	for (int i = 0; i < thread_amount; ++i) {
-		if (extra_lines) {
-			threads.push_back(std::thread(proc, cimgptr,
-				i * lines_per_thread + handled_extra_lines * pb_grayscaled->Image->Width, lines_per_thread + 1 * pb_grayscaled->Image->Width));
-			++handled_extra_lines;
-			--extra_lines;
+		if (a < 1 || a > 64) {
+			bt_wykonaj->Enabled = false;
 		}
 		else
-			threads.push_back(std::thread(proc, cimgptr, i * lines_per_thread * pb_grayscaled->Image->Width, lines_per_thread * pb_grayscaled->Image->Width));
-	}
-	for (auto& th : threads) {
-		th.join();
+			bt_wykonaj->Enabled = true;
 	}
 
-	//proc(cimgptr, 0, pb_grayscaled->Image->Width*pb_grayscaled->Image->Height);//debug
-
-	pb_grayscaled->Image = bmp; //nie kopiuje? czy trzeba delete bmp?
-	//bmp->UnlockBits(bmpData);
-	pb_grayscaled->Image->Save("..\\output.bmp", Imaging::ImageFormat::Bmp);
-
-	//TODO: histogram grayscale
-	DrawHistogram("..\\output.bmp", pb_grayscaledHist);
-	bmp->UnlockBits(bmpData);
-
-}
-private: System::Void lb_cykleProc_SelectedIndexChanged(System::Object^ sender, System::EventArgs^ e) {
-}
-
-private: System::Void tb_iloscWatkow_TextChanged(System::Object^ sender, System::EventArgs^ e) {
-	int a = 0;
-	if (!tb_iloscWatkow->Text->IsNullOrEmpty(tb_iloscWatkow->Text))
-		a = Convert::ToInt16(tb_iloscWatkow->Text);
-	
-	if (a < 1 || a > 64) {
-		bt_wykonaj->Enabled = false;
-	}
-	else
-		bt_wykonaj->Enabled = true;
-}
-
-private: System::Void tb_iloscWatkow_KeyPress(System::Object^ sender, System::Windows::Forms::KeyPressEventArgs^ e) {
-	if (!Char::IsDigit(e->KeyChar) && e->KeyChar != 0x08)
-	{
-		e->Handled = true;
-	}
-}
-
-private: void FreePictureBox(PictureBox^ picbox) {
-	if (picbox->Image != nullptr)
-	{
-		delete picbox->Image;
-		picbox->Image = nullptr;
-	}
-	//clear imagebox (for histograms)
-	System::Drawing::Graphics^ graphics = picbox->CreateGraphics();
-	graphics->Clear(SystemColors::Control);
-	delete graphics;
-}
-
-private: void DrawHistogram(cv::String imgpath, PictureBox^ picbox) {
-	cv::Mat src = cv::imread(cv::samples::findFile(imgpath, cv::IMREAD_COLOR));
-
-	std::vector<cv::Mat> bgr_planes;
-	split(src, bgr_planes);
-	int histSize = 256;
-	float range[] = { 0, 256 }; //the upper boundary is exclusive
-	const float* histRange[] = { range };
-	bool uniform = true, accumulate = false;
-	cv::Mat b_hist, g_hist, r_hist;
-	calcHist(&bgr_planes[0], 1, 0, cv::Mat(), b_hist, 1, &histSize, histRange, uniform, accumulate);
-	calcHist(&bgr_planes[1], 1, 0, cv::Mat(), g_hist, 1, &histSize, histRange, uniform, accumulate);
-	calcHist(&bgr_planes[2], 1, 0, cv::Mat(), r_hist, 1, &histSize, histRange, uniform, accumulate);
-	int hist_w = 512, hist_h = 400;
-	int bin_w = cvRound((double)hist_w / histSize);
-	cv::Mat histImage(hist_h, hist_w, CV_8UC3, cv::Scalar(0, 0, 0));
-	normalize(b_hist, b_hist, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat());
-	normalize(g_hist, g_hist, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat());
-	normalize(r_hist, r_hist, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat());
-	for (int i = 1; i < histSize; i++)
-	{
-		line(histImage, cv::Point(bin_w * (i - 1), hist_h - cvRound(b_hist.at<float>(i - 1))),
-			cv::Point(bin_w * (i), hist_h - cvRound(b_hist.at<float>(i))),
-			cv::Scalar(255, 0, 0), 2, 8, 0);
-		line(histImage, cv::Point(bin_w * (i - 1), hist_h - cvRound(g_hist.at<float>(i - 1))),
-			cv::Point(bin_w * (i), hist_h - cvRound(g_hist.at<float>(i))),
-			cv::Scalar(0, 255, 0), 2, 8, 0);
-		line(histImage, cv::Point(bin_w * (i - 1), hist_h - cvRound(r_hist.at<float>(i - 1))),
-			cv::Point(bin_w * (i), hist_h - cvRound(r_hist.at<float>(i))),
-			cv::Scalar(0, 0, 255), 2, 8, 0);
+	private: System::Void tb_iloscWatkow_KeyPress(System::Object^ sender, System::Windows::Forms::KeyPressEventArgs^ e) {
+		if (!Char::IsDigit(e->KeyChar) && e->KeyChar != 0x08)
+		{
+			e->Handled = true;
+		}
 	}
 
-	System::Drawing::Graphics^ graphics = picbox->CreateGraphics();
-	System::IntPtr ptr(histImage.ptr());
-	System::Drawing::Bitmap^ b = gcnew System::Drawing::Bitmap(histImage.cols, histImage.rows, histImage.step, System::Drawing::Imaging::PixelFormat::Format24bppRgb, ptr);
-	System::Drawing::RectangleF rect(0, 0, picbox->Width, picbox->Height);
-	graphics->DrawImage(b, rect);
-	delete graphics;
-}
-};
+	private: void FreePictureBox(PictureBox^ picbox) {
+		if (picbox->Image != nullptr)
+		{
+			delete picbox->Image;
+			picbox->Image = nullptr;
+		}
+		//clear imagebox (for histograms)
+		System::Drawing::Graphics^ graphics = picbox->CreateGraphics();
+		graphics->Clear(SystemColors::Control);
+		delete graphics;
+	}
+
+	private: void DrawHistogram(cv::String imgpath, PictureBox^ picbox) {
+		cv::Mat src = cv::imread(cv::samples::findFile(imgpath, cv::IMREAD_COLOR));
+
+		std::vector<cv::Mat> bgr_planes;
+		split(src, bgr_planes);
+		int histSize = 256;
+		float range[] = { 0, 256 }; //the upper boundary is exclusive
+		const float* histRange[] = { range };
+		bool uniform = true, accumulate = false;
+		cv::Mat b_hist, g_hist, r_hist;
+		calcHist(&bgr_planes[0], 1, 0, cv::Mat(), b_hist, 1, &histSize, histRange, uniform, accumulate);
+		calcHist(&bgr_planes[1], 1, 0, cv::Mat(), g_hist, 1, &histSize, histRange, uniform, accumulate);
+		calcHist(&bgr_planes[2], 1, 0, cv::Mat(), r_hist, 1, &histSize, histRange, uniform, accumulate);
+		int hist_w = 512, hist_h = 400;
+		int bin_w = cvRound((double)hist_w / histSize);
+		cv::Mat histImage(hist_h, hist_w, CV_8UC3, cv::Scalar(0, 0, 0));
+		normalize(b_hist, b_hist, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat());
+		normalize(g_hist, g_hist, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat());
+		normalize(r_hist, r_hist, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat());
+		for (int i = 1; i < histSize; i++)
+		{
+			line(histImage, cv::Point(bin_w * (i - 1), hist_h - cvRound(b_hist.at<float>(i - 1))),
+				cv::Point(bin_w * (i), hist_h - cvRound(b_hist.at<float>(i))),
+				cv::Scalar(255, 0, 0), 2, 8, 0);
+			line(histImage, cv::Point(bin_w * (i - 1), hist_h - cvRound(g_hist.at<float>(i - 1))),
+				cv::Point(bin_w * (i), hist_h - cvRound(g_hist.at<float>(i))),
+				cv::Scalar(0, 255, 0), 2, 8, 0);
+			line(histImage, cv::Point(bin_w * (i - 1), hist_h - cvRound(r_hist.at<float>(i - 1))),
+				cv::Point(bin_w * (i), hist_h - cvRound(r_hist.at<float>(i))),
+				cv::Scalar(0, 0, 255), 2, 8, 0);
+		}
+
+		System::Drawing::Graphics^ graphics = picbox->CreateGraphics();
+		System::IntPtr ptr(histImage.ptr());
+		System::Drawing::Bitmap^ b = gcnew System::Drawing::Bitmap(histImage.cols, histImage.rows, histImage.step, System::Drawing::Imaging::PixelFormat::Format24bppRgb, ptr);
+		System::Drawing::RectangleF rect(0, 0, picbox->Width, picbox->Height);
+		graphics->DrawImage(b, rect);
+		delete graphics;
+	}
+	};
 }

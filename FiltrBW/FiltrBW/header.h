@@ -33,4 +33,6 @@ void PrintToListBox(System::Windows::Forms::ListBox^ lbox, String^ msg) {
     lbox->BeginUpdate();
     lbox->Items->Add(msg);
     lbox->EndUpdate();
+    //autoscroll na dol listy
+    lbox->TopIndex = lbox->Items->Count - 1;
 }

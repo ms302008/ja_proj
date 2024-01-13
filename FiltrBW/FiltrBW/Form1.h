@@ -99,7 +99,7 @@ namespace CppCLRWinFormsProject {
 			this->gb_cykle->Controls->Add(this->lb_cykleProc);
 			this->gb_cykle->Location = System::Drawing::Point(412, 547);
 			this->gb_cykle->Name = L"gb_cykle";
-			this->gb_cykle->Size = System::Drawing::Size(272, 81);
+			this->gb_cykle->Size = System::Drawing::Size(272, 90);
 			this->gb_cykle->TabIndex = 18;
 			this->gb_cykle->TabStop = false;
 			this->gb_cykle->Text = L"Cykle procesora";
@@ -109,7 +109,7 @@ namespace CppCLRWinFormsProject {
 			this->lb_cykleProc->FormattingEnabled = true;
 			this->lb_cykleProc->Location = System::Drawing::Point(6, 15);
 			this->lb_cykleProc->Name = L"lb_cykleProc";
-			this->lb_cykleProc->Size = System::Drawing::Size(260, 56);
+			this->lb_cykleProc->Size = System::Drawing::Size(260, 69);
 			this->lb_cykleProc->TabIndex = 0;
 			// 
 			// bt_wykonaj
@@ -147,7 +147,7 @@ namespace CppCLRWinFormsProject {
 			this->checkAsm->Name = L"checkAsm";
 			this->checkAsm->Size = System::Drawing::Size(181, 17);
 			this->checkAsm->TabIndex = 14;
-			this->checkAsm->Text = L"Wykonaj u¿ywaj¹c biblioteki asm";
+			this->checkAsm->Text = L"Wykonaj uzywajac biblioteki asm";
 			this->checkAsm->UseVisualStyleBackColor = true;
 			this->checkAsm->CheckedChanged += gcnew System::EventHandler(this, &Form1::checkAsm_CheckedChanged);
 			// 
@@ -223,7 +223,7 @@ namespace CppCLRWinFormsProject {
 			this->gb_iloscWatkow->Size = System::Drawing::Size(198, 44);
 			this->gb_iloscWatkow->TabIndex = 23;
 			this->gb_iloscWatkow->TabStop = false;
-			this->gb_iloscWatkow->Text = L"Wybierz iloœæ w¹tków (1-64)";
+			this->gb_iloscWatkow->Text = L"Wybierz ilosc watkow (1-64)";
 			// 
 			// tb_iloscWatkow
 			// 
@@ -270,7 +270,6 @@ namespace CppCLRWinFormsProject {
 #pragma endregion
 	private: System::Void Form1_Load(System::Object^ sender, System::EventArgs^ e) {
 		dllHandle = LoadLibrary(L"DLLC.dll");
-		PrintToListBox(lb_cykleProc, "Zaladowano biblioteke C++!");
 
 		bt_wykonaj->Enabled = false;
 		lb_cykleProc->SelectionMode = SelectionMode::None;
@@ -285,14 +284,12 @@ namespace CppCLRWinFormsProject {
 			FreeLibrary(dllHandle);
 			dllHandle = NULL;
 			dllHandle = LoadLibrary(L"DLL.dll");
-			PrintToListBox(lb_cykleProc, "Zaladowano biblioteke asm!");
 		}
 		else
 		{
 			FreeLibrary(dllHandle);
 			dllHandle = NULL;
 			dllHandle = LoadLibrary(L"DLLC.dll");
-			PrintToListBox(lb_cykleProc, "Zaladowano biblioteke C++!");
 		}
 	}
 	private: System::Void bt_wybPlik_Click(System::Object^ sender, System::EventArgs^ e)
@@ -309,32 +306,42 @@ namespace CppCLRWinFormsProject {
 		{
 			if ((myStream = myOpenFileDialog->OpenFile()) != nullptr)
 			{
-				//Code to read the stream
-				//zwolnienie istniejacych obrazow i ich histogramow (if any) przed wladowaniem nowych
-				FreePictureBox(pb_grayscaled);
-				FreePictureBox(pb_grayscaledHist);
-				FreePictureBox(pb_orgObr);
-				FreePictureBox(pb_orgObrHist);
+				FileInfo^ fi = gcnew FileInfo(myOpenFileDialog->FileName);
+				if ((fi->Extension == ".png" && fi->Length < 125'000'000) ||
+					(fi->Extension == ".jpg" && fi->Length < 125'000'000) ||
+					(fi->Extension == ".jpeg" && fi->Length < 125'000'000) ||
+					(fi->Extension == ".bmp" && fi->Length < 1'000'000'000)) { //przyjmuj tylko bitmapy <1GB i <125MB inne formaty
+					DisableComponents();
+					//Code to read the stream
+					//zwolnienie istniejacych obrazow i ich histogramow (if any) przed wladowaniem nowych
+					FreePictureBox(pb_grayscaled);
+					FreePictureBox(pb_grayscaledHist);
+					FreePictureBox(pb_orgObr);
+					FreePictureBox(pb_orgObrHist);
 
-				pb_orgObr->Image = Image::FromFile(myOpenFileDialog->FileName);
-				pb_orgObr->SizeMode = PictureBoxSizeMode::StretchImage;
+					pb_orgObr->Image = Image::FromFile(myOpenFileDialog->FileName);
+					pb_orgObr->SizeMode = PictureBoxSizeMode::StretchImage;
+					myStream->Close();
+					cv::String path = msclr::interop::marshal_as<std::string>(myOpenFileDialog->FileName);
 
-				cv::String path = msclr::interop::marshal_as<std::string>(myOpenFileDialog->FileName);
+					DrawHistogram(path, pb_orgObrHist);
 
-				DrawHistogram(path, pb_orgObrHist);
-
-				myStream->Close();
-				bt_wykonaj->Enabled = true;
-				tb_iloscWatkow->Enabled = true;
+					EnableComponents();
+				}
+				else {
+					PrintToListBox(lb_cykleProc, "Za duzy plik!");
+				}
 			}
 		}
 		delete myOpenFileDialog;
 	}
 
 	private: System::Void bt_wykonaj_Click(System::Object^ sender, System::EventArgs^ e) {
-		bt_wykonaj->Enabled = false;
+		DisableComponents();
 		FreePictureBox(pb_grayscaled);
 		FreePictureBox(pb_grayscaledHist);
+
+		clock_t start_time = clock();
 
 		Bitmap^ bmp = gcnew Bitmap(pb_orgObr->Image);
 		System::Drawing::Imaging::BitmapData^ bmpData = bmp->LockBits(System::Drawing::Rectangle(0, 0, bmp->Width, bmp->Height),
@@ -345,11 +352,11 @@ namespace CppCLRWinFormsProject {
 		//piksele w pamieci od lewej do prawej, od gory w dol, BGR
 		to_grayscale proc = (to_grayscale)GetProcAddress(dllHandle, "to_grayscale");
 
-		//threads
-		std::string temp = "";
-		MarshalString(tb_iloscWatkow->Text, temp);
+		//threads!
+		std::string temp = msclr::interop::marshal_as<std::string>(tb_iloscWatkow->Text);
 		int thread_amount = stoi(temp);
 
+		//cap na ilosc watkow jesli obraz jest za maly
 		if (pb_orgObr->Image->Height < thread_amount)
 			thread_amount = pb_orgObr->Image->Height;
 
@@ -379,10 +386,22 @@ namespace CppCLRWinFormsProject {
 		//histogram grayscale
 		DrawHistogram("..\\output.bmp", pb_grayscaledHist);
 		bmp->UnlockBits(bmpData);
-		bt_wykonaj->Enabled = true;
+
+		clock_t finish_time = clock();
+		double duration_s = (double)(finish_time - start_time)/CLOCKS_PER_SEC;
+
+		if (checkAsm->Checked) {
+			PrintToListBox(lb_cykleProc, "asm: Ilosc watkow: " + thread_amount +" Czas wykonania: " + duration_s + "s");
+		}
+		else
+			PrintToListBox(lb_cykleProc, "C++: Ilosc watkow: " + thread_amount + " Czas wykonania: " + duration_s + "s");
+		
+
+		EnableComponents();
 	}
 
 	private: System::Void tb_iloscWatkow_TextChanged(System::Object^ sender, System::EventArgs^ e) {
+		//zablokuj wykonanie jesli liczba nie jest w zakresie 1-64
 		int a = 0;
 		if (!tb_iloscWatkow->Text->IsNullOrEmpty(tb_iloscWatkow->Text))
 			a = Convert::ToInt16(tb_iloscWatkow->Text);
@@ -395,6 +414,7 @@ namespace CppCLRWinFormsProject {
 	}
 
 	private: System::Void tb_iloscWatkow_KeyPress(System::Object^ sender, System::Windows::Forms::KeyPressEventArgs^ e) {
+		//blokuj nie-cyfry i nie-backspace
 		if (!Char::IsDigit(e->KeyChar) && e->KeyChar != 0x08)
 		{
 			e->Handled = true;
@@ -411,6 +431,20 @@ namespace CppCLRWinFormsProject {
 		System::Drawing::Graphics^ graphics = picbox->CreateGraphics();
 		graphics->Clear(SystemColors::Control);
 		delete graphics;
+	}
+
+	private: void DisableComponents() {
+		bt_wybPlik->Enabled = false;
+		bt_wykonaj->Enabled = false;
+		tb_iloscWatkow->Enabled = false;
+		checkAsm->Enabled = false;
+	}
+
+	private: void EnableComponents() {
+		bt_wybPlik->Enabled = true;
+		bt_wykonaj->Enabled = true;
+		tb_iloscWatkow->Enabled = true;
+		checkAsm->Enabled = true;
 	}
 
 	private: void DrawHistogram(cv::String imgpath, PictureBox^ picbox) {

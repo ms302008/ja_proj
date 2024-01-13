@@ -1,6 +1,9 @@
 /// Filtr czarno-bia³y
 /// Micha³ Suchan
 /// 
+/// ver 0.9 (13.01.24) - dodano limity na pliki, naprawiono watki (znowu - konwersja ze string zwracala tylko pierwszy znak),
+/// dodano liczenie czasu, usunieto polskie znaki z winforma
+/// 
 /// ver 0.8 (12.01.24) - uporzadkowano kod, naprawiono watki
 /// 
 /// ver 0.7 (06.01.24) - dodano watki

@@ -1,11 +1,11 @@
 ﻿  main.cpp
-D:\git\ja_proj\FiltrBW\FiltrBW\Form1.h(450,103): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+D:\git\ja_proj\FiltrBW\FiltrBW\Form1.h(485,103): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
   (compiling source file '/main.cpp')
   
-D:\git\ja_proj\FiltrBW\FiltrBW\Form1.h(451,63): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+D:\git\ja_proj\FiltrBW\FiltrBW\Form1.h(486,63): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
   (compiling source file '/main.cpp')
   
-D:\git\ja_proj\FiltrBW\FiltrBW\Form1.h(451,48): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+D:\git\ja_proj\FiltrBW\FiltrBW\Form1.h(486,48): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
   (compiling source file '/main.cpp')
   
 D:\git\ja_proj\FiltrBW\include\opencv2\core\fast_math.hpp(205): warning C4793: '`anonymous namespace'::cvRound': function compiled as native:

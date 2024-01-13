@@ -75,10 +75,13 @@ cvtsi2ss xmm1, ebx ;skonwertuj go do float na najnizsze 32bity xmm1
 mulps xmm1, xmm0 ;pomnoz powstale wektory
 movaps xmm2, xmm1 ;kopiuj zawartosc
 psrldq xmm2, 8 ;przesun zeby dodac b i r
-addss xmm2, xmm1 ;dodaj najnizej stojace wartosci (zapis jako double)
+addss xmm2, xmm1 ;dodaj najnizej stojace wartosci
 psrldq xmm1, 4 ;przesun xmm1 o 4 bajty w prawo zeby dodac g
-addss xmm2, xmm1 ;dodaj najnizej stojace wartosci (zapis jako double)
+addss xmm2, xmm1 ;dodaj najnizej stojace wartosci
 cvtss2si r10d, xmm2 ;konwersja na int
+
+;cmp r10b, 0
+;cmp r10b, 255
 
 mov byte ptr [rcx], r10b ;zaladuj nowa wartosc pod b
 mov byte ptr [rcx+1], r10b ;zaladuj nowa wartosc pod g

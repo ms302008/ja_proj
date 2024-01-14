@@ -27,7 +27,7 @@ void MarshalString(String^ s, std::wstring& os) {
     Marshal::FreeHGlobal(IntPtr((void*)chars));
 }
 
-typedef long long(_fastcall* to_grayscale)(uint8_t*, int, int);
+typedef bool(_fastcall* to_grayscale)(uint8_t*, int, int);
 
 void PrintToListBox(System::Windows::Forms::ListBox^ lbox, String^ msg) {
     lbox->BeginUpdate();

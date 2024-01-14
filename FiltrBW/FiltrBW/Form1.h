@@ -301,37 +301,42 @@ namespace CppCLRWinFormsProject {
 		myOpenFileDialog->Filter = "Image Files (*.bmp;*.jpg;*.jpeg,*.png)|*.BMP;*.JPG;*.JPEG;*.PNG";
 		myOpenFileDialog->FilterIndex = 1;
 		myOpenFileDialog->RestoreDirectory = true;
-
-		if (myOpenFileDialog->ShowDialog() == System::Windows::Forms::DialogResult::OK)
-		{
-			if ((myStream = myOpenFileDialog->OpenFile()) != nullptr)
+		try {
+			if (myOpenFileDialog->ShowDialog() == System::Windows::Forms::DialogResult::OK)
 			{
-				FileInfo^ fi = gcnew FileInfo(myOpenFileDialog->FileName);
-				if ((fi->Extension == ".png" && fi->Length < 125'000'000) ||
-					(fi->Extension == ".jpg" && fi->Length < 125'000'000) ||
-					(fi->Extension == ".jpeg" && fi->Length < 125'000'000) ||
-					(fi->Extension == ".bmp" && fi->Length < 1'000'000'000)) { //przyjmuj tylko bitmapy <1GB i <125MB inne formaty
-					DisableComponents();
-					//Code to read the stream
-					//zwolnienie istniejacych obrazow i ich histogramow (if any) przed wladowaniem nowych
-					FreePictureBox(pb_grayscaled);
-					FreePictureBox(pb_grayscaledHist);
-					FreePictureBox(pb_orgObr);
-					FreePictureBox(pb_orgObrHist);
+				if ((myStream = myOpenFileDialog->OpenFile()) != nullptr)
+				{
+					FileInfo^ fi = gcnew FileInfo(myOpenFileDialog->FileName);
+					if ((fi->Extension == ".png" && fi->Length < 125'000'000) ||
+						(fi->Extension == ".jpg" && fi->Length < 125'000'000) ||
+						(fi->Extension == ".jpeg" && fi->Length < 125'000'000) ||
+						(fi->Extension == ".bmp" && fi->Length < 1'000'000'000)) { //przyjmuj tylko bitmapy <1GB i <125MB inne formaty
+						DisableComponents();
+						//Code to read the stream
+						//zwolnienie istniejacych obrazow i ich histogramow (if any) przed wladowaniem nowych
+						FreePictureBox(pb_grayscaled);
+						FreePictureBox(pb_grayscaledHist);
+						FreePictureBox(pb_orgObr);
+						FreePictureBox(pb_orgObrHist);
 
-					pb_orgObr->Image = Image::FromFile(myOpenFileDialog->FileName);
-					pb_orgObr->SizeMode = PictureBoxSizeMode::StretchImage;
-					myStream->Close();
-					cv::String path = msclr::interop::marshal_as<std::string>(myOpenFileDialog->FileName);
+						pb_orgObr->Image = Image::FromFile(myOpenFileDialog->FileName);
+						pb_orgObr->SizeMode = PictureBoxSizeMode::StretchImage;
+						myStream->Close();
+						cv::String path = msclr::interop::marshal_as<std::string>(myOpenFileDialog->FileName);
 
-					DrawHistogram(path, pb_orgObrHist);
+						DrawHistogram(path, pb_orgObrHist);
 
-					EnableComponents();
-				}
-				else {
-					PrintToListBox(lb_cykleProc, "Za duzy plik!");
+						EnableComponents();
+					}
+					else {
+						PrintToListBox(lb_cykleProc, "Za duzy plik!");
+					}
 				}
 			}
+		}
+		catch(Exception^ ex){
+			PrintToListBox(lb_cykleProc, "Blad przy otwieraniu pliku!");
+			bt_wybPlik->Enabled = true;
 		}
 		delete myOpenFileDialog;
 	}

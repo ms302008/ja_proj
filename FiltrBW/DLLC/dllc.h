@@ -3,6 +3,14 @@
 
 /// Filtr czarno-bia³y
 /// Micha³ Suchan
+/// Jezyki Asemblerowe sem 5, gr 5
+///
+/// Zalozenia: przeksztalcenie obrazu wejsciowego w czarno bialy korzystajac z metody oswietleniowej / lumy(luminosity method).
+/// Konwersja przyporzadkowuje kolorom RGB wagi zalezne od wrazliwosci ludzkiego oka na dany kolor : 0.3 czerwonemu, 0.59 zielonemu
+/// i 0.11 niebieskiemu, po czym dodaje otrzymane wartosci.
+/// 
+/// 
+/// ver 1.2 (14.01.24) - zmiana kilku elementow zeby zgadzala sie z wersja asm
 /// 
 /// ver 1.1 (11.05.24) - naprawienie funkcji
 /// 

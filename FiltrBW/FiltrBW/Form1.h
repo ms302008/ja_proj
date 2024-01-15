@@ -41,7 +41,7 @@ namespace CppCLRWinFormsProject {
 	private: System::Windows::Forms::Button^ bt_wykonaj;
 	private: System::Windows::Forms::GroupBox^ gb_orgObr;
 	private: System::Windows::Forms::PictureBox^ pb_orgObr;
-	private: System::Windows::Forms::CheckBox^ checkAsm;
+
 	private: System::Windows::Forms::Button^ bt_wybPlik;
 	private: System::Windows::Forms::GroupBox^ gb_grayscaled;
 	private: System::Windows::Forms::PictureBox^ pb_grayscaled;
@@ -52,6 +52,10 @@ namespace CppCLRWinFormsProject {
 	private: System::Windows::Forms::GroupBox^ gb_iloscWatkow;
 	private: System::Windows::Forms::TextBox^ tb_iloscWatkow;
 	private: System::Windows::Forms::ListBox^ lb_cykleProc;
+	private: System::Windows::Forms::RadioButton^ rb_asm;
+
+	private: System::Windows::Forms::RadioButton^ rb_cpp;
+
 
 
 	private:
@@ -72,7 +76,6 @@ namespace CppCLRWinFormsProject {
 			this->bt_wykonaj = (gcnew System::Windows::Forms::Button());
 			this->gb_orgObr = (gcnew System::Windows::Forms::GroupBox());
 			this->pb_orgObr = (gcnew System::Windows::Forms::PictureBox());
-			this->checkAsm = (gcnew System::Windows::Forms::CheckBox());
 			this->bt_wybPlik = (gcnew System::Windows::Forms::Button());
 			this->gb_grayscaled = (gcnew System::Windows::Forms::GroupBox());
 			this->pb_grayscaled = (gcnew System::Windows::Forms::PictureBox());
@@ -82,6 +85,8 @@ namespace CppCLRWinFormsProject {
 			this->pb_grayscaledHist = (gcnew System::Windows::Forms::PictureBox());
 			this->gb_iloscWatkow = (gcnew System::Windows::Forms::GroupBox());
 			this->tb_iloscWatkow = (gcnew System::Windows::Forms::TextBox());
+			this->rb_asm = (gcnew System::Windows::Forms::RadioButton());
+			this->rb_cpp = (gcnew System::Windows::Forms::RadioButton());
 			this->gb_cykle->SuspendLayout();
 			this->gb_orgObr->SuspendLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pb_orgObr))->BeginInit();
@@ -139,17 +144,6 @@ namespace CppCLRWinFormsProject {
 			this->pb_orgObr->Size = System::Drawing::Size(321, 212);
 			this->pb_orgObr->TabIndex = 1;
 			this->pb_orgObr->TabStop = false;
-			// 
-			// checkAsm
-			// 
-			this->checkAsm->AutoSize = true;
-			this->checkAsm->Location = System::Drawing::Point(225, 560);
-			this->checkAsm->Name = L"checkAsm";
-			this->checkAsm->Size = System::Drawing::Size(181, 17);
-			this->checkAsm->TabIndex = 14;
-			this->checkAsm->Text = L"Wykonaj uzywajac biblioteki asm";
-			this->checkAsm->UseVisualStyleBackColor = true;
-			this->checkAsm->CheckedChanged += gcnew System::EventHandler(this, &Form1::checkAsm_CheckedChanged);
 			// 
 			// bt_wybPlik
 			// 
@@ -235,11 +229,37 @@ namespace CppCLRWinFormsProject {
 			this->tb_iloscWatkow->TextChanged += gcnew System::EventHandler(this, &Form1::tb_iloscWatkow_TextChanged);
 			this->tb_iloscWatkow->KeyPress += gcnew System::Windows::Forms::KeyPressEventHandler(this, &Form1::tb_iloscWatkow_KeyPress);
 			// 
+			// rb_asm
+			// 
+			this->rb_asm->AutoSize = true;
+			this->rb_asm->Location = System::Drawing::Point(225, 547);
+			this->rb_asm->Name = L"rb_asm";
+			this->rb_asm->Size = System::Drawing::Size(180, 17);
+			this->rb_asm->TabIndex = 24;
+			this->rb_asm->TabStop = true;
+			this->rb_asm->Text = L"Wykonaj uzywajac biblioteki asm";
+			this->rb_asm->UseVisualStyleBackColor = true;
+			this->rb_asm->CheckedChanged += gcnew System::EventHandler(this, &Form1::rb_asm_CheckedChanged);
+			// 
+			// rb_cpp
+			// 
+			this->rb_cpp->AutoSize = true;
+			this->rb_cpp->Location = System::Drawing::Point(225, 570);
+			this->rb_cpp->Name = L"rb_cpp";
+			this->rb_cpp->Size = System::Drawing::Size(180, 17);
+			this->rb_cpp->TabIndex = 25;
+			this->rb_cpp->TabStop = true;
+			this->rb_cpp->Text = L"Wykonaj uzywajac biblioteki C++";
+			this->rb_cpp->UseVisualStyleBackColor = true;
+			this->rb_cpp->CheckedChanged += gcnew System::EventHandler(this, &Form1::rb_cpp_CheckedChanged);
+			// 
 			// Form1
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(709, 640);
+			this->Controls->Add(this->rb_cpp);
+			this->Controls->Add(this->rb_asm);
 			this->Controls->Add(this->gb_iloscWatkow);
 			this->Controls->Add(this->gb_grayscaledHist);
 			this->Controls->Add(this->gb_orgObrHist);
@@ -247,7 +267,6 @@ namespace CppCLRWinFormsProject {
 			this->Controls->Add(this->gb_cykle);
 			this->Controls->Add(this->bt_wykonaj);
 			this->Controls->Add(this->gb_orgObr);
-			this->Controls->Add(this->checkAsm);
 			this->Controls->Add(this->bt_wybPlik);
 			this->Name = L"Form1";
 			this->Text = L"B&W";
@@ -269,29 +288,36 @@ namespace CppCLRWinFormsProject {
 		}
 #pragma endregion
 	private: System::Void Form1_Load(System::Object^ sender, System::EventArgs^ e) {
-		dllHandle = LoadLibrary(L"DLLC.dll");
+		dllHandle = LoadLibrary(L"DLL.dll");
 
+		//ustaw poczatkowa liczbe watkow na ilosc jednostek logiczych sprzetu
+		const auto processor_count = std::thread::hardware_concurrency();
+		tb_iloscWatkow->Text = processor_count.ToString();
+
+		rb_asm->Checked = true;
 		bt_wykonaj->Enabled = false;
 		lb_cykleProc->SelectionMode = SelectionMode::None;
 		tb_iloscWatkow->Enabled = false;
 		tb_iloscWatkow->MaxLength = 2;
+		
 	}
 
-	private: System::Void checkAsm_CheckedChanged(System::Object^ sender, System::EventArgs^ e)
-	{
-		if (checkAsm->Checked)
-		{
+	private: System::Void rb_asm_CheckedChanged(System::Object^ sender, System::EventArgs^ e) {
+		if (rb_asm->Checked == true) {
 			FreeLibrary(dllHandle);
 			dllHandle = NULL;
 			dllHandle = LoadLibrary(L"DLL.dll");
 		}
-		else
-		{
+	}
+
+	private: System::Void rb_cpp_CheckedChanged(System::Object^ sender, System::EventArgs^ e) {
+		if (rb_cpp->Checked == true) {
 			FreeLibrary(dllHandle);
 			dllHandle = NULL;
 			dllHandle = LoadLibrary(L"DLLC.dll");
 		}
 	}
+
 	private: System::Void bt_wybPlik_Click(System::Object^ sender, System::EventArgs^ e)
 	{
 		Stream^ myStream;
@@ -334,7 +360,7 @@ namespace CppCLRWinFormsProject {
 				}
 			}
 		}
-		catch(Exception^ ex){
+		catch (Exception^ ex) {
 			PrintToListBox(lb_cykleProc, "Blad przy otwieraniu pliku!");
 			bt_wybPlik->Enabled = true;
 		}
@@ -393,14 +419,13 @@ namespace CppCLRWinFormsProject {
 		bmp->UnlockBits(bmpData);
 
 		clock_t finish_time = clock();
-		double duration_s = (double)(finish_time - start_time)/CLOCKS_PER_SEC;
+		double duration_s = (double)(finish_time - start_time) / CLOCKS_PER_SEC;
 
-		if (checkAsm->Checked) {
-			PrintToListBox(lb_cykleProc, "asm: Ilosc watkow: " + thread_amount +" Czas wykonania: " + duration_s + "s");
+		if (rb_asm->Checked) {
+			PrintToListBox(lb_cykleProc, "asm: Ilosc watkow: " + thread_amount + " Czas wykonania: " + duration_s + "s");
 		}
 		else
 			PrintToListBox(lb_cykleProc, "C++: Ilosc watkow: " + thread_amount + " Czas wykonania: " + duration_s + "s");
-		
 
 		EnableComponents();
 	}
@@ -442,14 +467,16 @@ namespace CppCLRWinFormsProject {
 		bt_wybPlik->Enabled = false;
 		bt_wykonaj->Enabled = false;
 		tb_iloscWatkow->Enabled = false;
-		checkAsm->Enabled = false;
+		rb_asm->Enabled = false;
+		rb_cpp->Enabled = false;
 	}
 
 	private: void EnableComponents() {
 		bt_wybPlik->Enabled = true;
 		bt_wykonaj->Enabled = true;
 		tb_iloscWatkow->Enabled = true;
-		checkAsm->Enabled = true;
+		rb_asm->Enabled = true;
+		rb_cpp->Enabled = true;
 	}
 
 	private: void DrawHistogram(cv::String imgpath, PictureBox^ picbox) {
@@ -491,5 +518,6 @@ namespace CppCLRWinFormsProject {
 		graphics->DrawImage(b, rect);
 		delete graphics;
 	}
+
 	};
 }

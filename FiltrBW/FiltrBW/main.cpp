@@ -7,6 +7,8 @@
 /// i 0.11 niebieskiemu, po czym dodaje otrzymane wartosci.
 ///
 /// 
+/// ver 1.1 (15.01.24) - zmieniono checkbox na radiobuttons, poczatkowa liczba watkow to liczba jednostek logicznych sprzetu
+/// 
 /// ver 1.0 (14.01.24) - dodano sprawdzanie zakresow w DLLkach, uzupelniono komentarze, dodano zabezpieczenie przed blednymi obrazami
 /// 
 /// ver 0.9 (13.01.24) - dodano limity na pliki, naprawiono watki (znowu - konwersja ze string zwracala tylko pierwszy znak),

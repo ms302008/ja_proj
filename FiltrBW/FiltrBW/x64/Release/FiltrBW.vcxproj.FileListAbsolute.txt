@@ -1,0 +1,3 @@
+D:\git\ja_proj\FiltrBW\FiltrBW\x64\Release\FiltrBW.vcxproj.AssemblyReference.cache
+D:\git\ja_proj\FiltrBW\FiltrBW\x64\Release\FiltrBW.Form1.resources
+D:\git\ja_proj\FiltrBW\FiltrBW\x64\Release\FiltrBW.vcxproj.GenerateResource.cache

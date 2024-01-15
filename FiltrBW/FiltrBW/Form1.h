@@ -412,7 +412,7 @@ namespace CppCLRWinFormsProject {
 
 		pb_grayscaled->Image = bmp; //przez referencje
 		pb_grayscaled->SizeMode = PictureBoxSizeMode::StretchImage;
-		pb_grayscaled->Image->Save("..\\output.bmp", Imaging::ImageFormat::Bmp);
+		pb_grayscaled->Image->Save("..\\output.bmp", Imaging::ImageFormat::Bmp);//zmienic na "output.bmp" dla wersji release
 
 		//histogram grayscale
 		DrawHistogram("..\\output.bmp", pb_grayscaledHist);
